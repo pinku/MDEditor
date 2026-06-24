@@ -1,115 +1,117 @@
 # MDEditor
 
-Editor e viewer **Markdown** con preview in tempo reale, temi chiaro/scuro, supporto tabelle, emoji e icone Font Awesome.
+A **Markdown** editor and viewer with live preview, light/dark themes, table support, emoji and Font Awesome icons.
 
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
 ![WPF](https://img.shields.io/badge/WPF-%235835CC.svg?logo=windows)
 ![license](https://img.shields.io/badge/license-MIT-green)
+![release](https://img.shields.io/badge/release-v1.1.0-blue)
+![windows](https://img.shields.io/badge/platform-Windows%2010%2B-0078D6?logo=windows)
 
-## ✨ Caratteristiche
+## ✨ Features
 
-- 📝 **Editor + Preview** affiancati con splitter ridimensionabile
-- 🌗 **Tema chiaro e scuro** (`Ctrl+T`) con salvataggio automatico
-- 🌐 **Multi-lingua**: Italiano e English
-- 📊 **Tabelle** avanzate: dialog di inserimento, aggiungi riga/colonna
-- 😀 **Emoji e icone Font Awesome 6** con selettore integrato (`Ctrl+Shift+E`)
-- ⌨️ **Shortcut da tastiera** per tutte le formattazioni
-- 💾 **Persistenza impostazioni**: tema, lingua e layout salvati automaticamente
-- ⇄ **Inverti pannelli** editor/preview
-- 🧮 **Markdown avanzato** via Markdig: tabelle, codice, diagrammi, math, footnote
+- 📝 **Split editor + preview** with resizable splitter
+- 🌗 **Light and dark theme** (`Ctrl+T`) with auto-save
+- 🌐 **Multi-language**: English and Italian
+- 📊 **Advanced tables**: insert dialog, add row/column
+- 😀 **Emoji & Font Awesome 6** picker with search (`Ctrl+Shift+E`)
+- ⌨️ **Keyboard shortcuts** for all formatting
+- 💾 **Settings persistence**: theme, language and layout saved automatically
+- ⇄ **Swap panels** editor/preview
+- 🧮 **Extended Markdown** via Markdig: tables, code, diagrams, math, footnotes
 
-## Shortcut
+## Shortcuts
 
-| Shortcut | Azione |
+| Shortcut | Action |
 |---|---|
-| `Ctrl+N/O/S` | Nuovo / Apri / Salva |
-| `Ctrl+T` | Toggle tema chiaro/scuro |
-| `Ctrl+B` | **Grassetto** |
-| `Ctrl+I` | *Corsivo* |
-| `Ctrl+D` | ~~Barrato~~ |
-| `Ctrl+1/2/3` | Titolo H1 / H2 / H3 |
-| `Ctrl+U` | Elenco puntato |
+| `Ctrl+N/O/S` | New / Open / Save |
+| `Ctrl+T` | Toggle light/dark theme |
+| `Ctrl+B` | **Bold** |
+| `Ctrl+I` | *Italic* |
+| `Ctrl+D` | ~~Strikethrough~~ |
+| `Ctrl+1/2/3` | Heading H1 / H2 / H3 |
+| `Ctrl+U` | Bulleted list |
 | `Ctrl+K` | Link |
-| `Ctrl+Shift+I` | Immagine |
-| `Ctrl+Shift+C` | Blocco codice |
-| `Ctrl+Shift+E` | Selettore Emoji / Icone |
+| `Ctrl+Shift+I` | Image |
+| `Ctrl+Shift+C` | Code block |
+| `Ctrl+Shift+E` | Emoji / Icon picker |
 
-## 🚀 Installazione
+## 🚀 Installation
 
-### Download diretto
+### Direct download
 
-Scarica l'ultima release da [GitHub Releases](https://github.com/pinku/MDEditor/releases/latest):
+Get the latest release from [GitHub Releases](https://github.com/pinku/MDEditor/releases/latest):
 
 📥 [**MDEditor-v1.1.0-win-x64.zip**](https://github.com/pinku/MDEditor/releases/download/v1.1.0/MDEditor-v1.1.0-win-x64.zip) (~61 MB)
 
-Estrai lo ZIP ed esegui `MDEditor.exe`. Richiede [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) (già incluso in Windows 11).
+Extract the ZIP and run `MDEditor.exe`. Requires [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) (already included in Windows 11).
 
-### Prerequisiti
+### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) (incluso in Windows 11, installabile su Windows 10)
+- [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) (included in Windows 11, installable on Windows 10)
 
 ### Build & Run
 
 ```bash
-# Clona il repository
+# Clone the repository
 git clone https://github.com/pinku/MDEditor.git
 cd MDEditor
 
-# Esegui
+# Run
 dotnet run
 
-# Oppure compila in Release
+# Build Release
 dotnet build -c Release
 
-# Pubblica come app standalone (Windows x64)
+# Publish as standalone app (Windows x64)
 dotnet publish -c Release -r win-x64 -o ./publish --self-contained true
 ```
 
 ### npm
 
 ```bash
-npm run build          # Compila Release
-npm run publish:win    # Pubblica self-contained Windows x64
-npm run run            # Avvia in debug
+npm run build          # Build Release
+npm run publish:win    # Publish self-contained Windows x64
+npm run run            # Run in debug mode
 ```
 
-## 🛠 Tecnologie
+## 🛠 Tech Stack
 
-| Tecnologia | Uso |
+| Technology | Purpose |
 |---|---|
-| [.NET 10](https://dotnet.microsoft.com/) | Runtime e SDK |
-| [WPF](https://github.com/dotnet/wpf) | Interfaccia desktop |
-| [Markdig](https://github.com/xoofx/markdig) | Parsing Markdown → HTML |
-| [WebView2](https://learn.microsoft.com/microsoft-edge/webview2) | Preview HTML |
-| [Font Awesome 6](https://fontawesome.com/) | Icone nella preview |
+| [.NET 10](https://dotnet.microsoft.com/) | Runtime & SDK |
+| [WPF](https://github.com/dotnet/wpf) | Desktop UI framework |
+| [Markdig](https://github.com/xoofx/markdig) | Markdown → HTML parsing |
+| [WebView2](https://learn.microsoft.com/microsoft-edge/webview2) | HTML preview rendering |
+| [Font Awesome 6](https://fontawesome.com/) | Icons in preview |
 
-## 📁 Struttura progetto
+## 📁 Project Structure
 
 ```
 MDEditor/
-├── App.xaml / .cs              # Avvio app, risorse, settings
-├── MainWindow.xaml / .cs       # Finestra principale
+├── App.xaml / .cs              # App startup, resources, settings
+├── MainWindow.xaml / .cs       # Main window
 ├── Dialogs/
-│   ├── AboutDialog.xaml / .cs  # Finestra About
-│   ├── IconDialog.xaml / .cs   # Selettore emoji/icone
-│   └── TableDialog.xaml / .cs  # Dialog inserimento tabella
+│   ├── AboutDialog.xaml / .cs  # About window
+│   ├── IconDialog.xaml / .cs   # Emoji/icon picker
+│   └── TableDialog.xaml / .cs  # Table insert dialog
 ├── Localization/
-│   └── LocalizationManager.cs  # Dizionari IT/EN
+│   └── LocalizationManager.cs  # EN/IT dictionaries
 ├── Models/
-│   └── AppSettings.cs          # Persistenza impostazioni JSON
+│   └── AppSettings.cs          # JSON settings persistence
 ├── Themes/
-│   ├── LightTheme.xaml         # Tema chiaro moderno
-│   └── DarkTheme.xaml          # Tema scuro moderno
+│   ├── LightTheme.xaml         # Modern light theme
+│   └── DarkTheme.xaml          # Modern dark theme
 └── ViewModels/
-    ├── MainViewModel.cs        # ViewModel principale
-    └── RelayCommand.cs         # Implementazione ICommand
+    ├── MainViewModel.cs        # Main ViewModel
+    └── RelayCommand.cs         # ICommand implementation
 ```
 
-## 👤 Autore
+## 👤 Author
 
 **Diego Pianarosa** — [GitHub](https://github.com/pinku)
 
-## 📄 Licenza
+## 📄 License
 
 MIT
