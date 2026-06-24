@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -84,6 +85,8 @@ public partial class MainWindow : Window
                 UpdateThemeButtonContent();
             if (e.PropertyName == nameof(MainViewModel.HtmlContent))
                 UpdateWebViewContent();
+            if (e.PropertyName == nameof(MainViewModel.IsDarkTheme))
+                _webViewInitialized = false;
         };
     }
 
@@ -601,15 +604,54 @@ public partial class MainWindow : Window
         }
     }
 
-    private void UpdateWebViewContent()
+    private bool _webViewInitialized;
+
+    private async void UpdateWebViewContent()
     {
-        if (PreviewWebView.CoreWebView2 != null)
+        if (PreviewWebView.CoreWebView2 == null) return;
+
+        PreviewWebView.DefaultBackgroundColor = _vm.IsDarkTheme
+            ? System.Drawing.Color.FromArgb(30, 30, 30)
+            : System.Drawing.Color.White;
+
+        if (!_webViewInitialized)
         {
-            // Set background color BEFORE navigating to prevent white flash
-            PreviewWebView.DefaultBackgroundColor = _vm.IsDarkTheme
-                ? System.Drawing.Color.FromArgb(30, 30, 30)
-                : System.Drawing.Color.White;
+            _webViewInitialized = true;
             PreviewWebView.CoreWebView2.NavigateToString(_vm.HtmlContent);
+            return;
+        }
+
+        // Update only body and style via JS to preserve scroll position
+        try
+        {
+            var html = _vm.HtmlContent;
+
+            // Extract and update <style>
+            var styleStart = html.IndexOf("<style>", StringComparison.Ordinal);
+            var styleEnd = html.IndexOf("</style>", StringComparison.Ordinal);
+            if (styleStart >= 0 && styleEnd > styleStart)
+            {
+                var css = html.Substring(styleStart + 7, styleEnd - styleStart - 7);
+                var cssJson = System.Text.Json.JsonSerializer.Serialize(css);
+                await PreviewWebView.CoreWebView2.ExecuteScriptAsync(
+                    $"document.querySelector('style').textContent = {cssJson};");
+            }
+
+            // Extract and update <body>
+            var bodyStart = html.IndexOf("<body>", StringComparison.Ordinal);
+            var bodyEnd = html.IndexOf("</body>", StringComparison.Ordinal);
+            if (bodyStart >= 0 && bodyEnd > bodyStart)
+            {
+                var bodyHtml = html.Substring(bodyStart + 6, bodyEnd - bodyStart - 6);
+                var bodyJson = System.Text.Json.JsonSerializer.Serialize(bodyHtml);
+                await PreviewWebView.CoreWebView2.ExecuteScriptAsync(
+                    $"document.body.innerHTML = {bodyJson};");
+            }
+        }
+        catch
+        {
+            // On error, fall back to full reload
+            _webViewInitialized = false;
         }
     }
 
