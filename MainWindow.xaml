@@ -7,15 +7,22 @@
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundBrush}">
 
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+
     <Window.InputBindings>
         <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
         <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveAsCommand}" />
         <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}" />
+        <KeyBinding Key="W" Modifiers="Control" Command="{Binding CloseCommand}" />
         <KeyBinding Key="T" Modifiers="Control" Command="{Binding ToggleThemeCommand}" />
     </Window.InputBindings>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -32,6 +39,11 @@
                           Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
                 <MenuItem x:Name="MenuSave" Header="Salva"
                           Command="{Binding SaveCommand}" InputGestureText="Ctrl+S" />
+                <MenuItem x:Name="MenuSaveAs" Header="Salva con nome..."
+                          Command="{Binding SaveAsCommand}" InputGestureText="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem x:Name="MenuClose" Header="Chiudi scheda"
+                          Command="{Binding CloseCommand}" InputGestureText="Ctrl+W" />
                 <Separator />
                 <MenuItem x:Name="MenuExit" Header="Esci"
                           Click="Exit_Click" InputGestureText="Alt+F4" />
@@ -121,8 +133,85 @@
             </RadioButton>
         </ToolBar>
 
+        <!-- ===== TAB BAR ===== -->
+        <TabControl x:Name="DocTabs" Grid.Row="2"
+                    ItemsSource="{Binding Documents}"
+                    SelectedItem="{Binding ActiveDocument}"
+                    BorderThickness="0" Padding="0"
+                    Background="Transparent">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+                    <Setter Property="Padding" Value="10,3" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="FontSize" Value="12" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="Transparent"
+                                        BorderThickness="0,0,0,2"
+                                        Padding="{TemplateBinding Padding}"
+                                        CornerRadius="4,4,0,0"
+                                        Margin="1,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text=" *"
+                                                   Visibility="{Binding IsModified, Converter={StaticResource BoolToVis}}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource AccentBrush}"
+                                                   FontWeight="Bold" />
+                                        <Button Content="✕"
+                                                Width="16" Height="16"
+                                                FontSize="9"
+                                                Margin="6,0,0,0"
+                                                Background="Transparent"
+                                                Foreground="{DynamicResource ForegroundBrush}"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Click="CloseTab_Click"
+                                                Tag="{Binding}"
+                                                VerticalAlignment="Center"
+                                                Opacity="0.6" />
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource SurfaceBrush}" />
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="{DynamicResource MenuItemHover}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.ItemContainerStyle>
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <Border Background="{DynamicResource ToolBarBackground}"
+                            BorderBrush="{DynamicResource ToolBarBorder}"
+                            BorderThickness="0,0,0,1"
+                            Padding="4,0">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      VerticalScrollBarVisibility="Disabled">
+                            <TabPanel x:Name="HeaderPanel"
+                                      IsItemsHost="True"
+                                      KeyboardNavigation.TabIndex="1"
+                                      Panel.ZIndex="1" />
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </TabControl.Template>
+        </TabControl>
+
         <!-- ===== MAIN CONTENT: Editor + Preview ===== -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="4" />
@@ -317,7 +406,7 @@
         </Grid>
 
         <!-- ===== STATUS BAR ===== -->
-        <StatusBar Grid.Row="3" Padding="8,2">
+        <StatusBar Grid.Row="4" Padding="8,2">
             <StatusBarItem>
                 <TextBlock Text="{Binding StatusText}" FontSize="11"
                            Foreground="{DynamicResource StatusBarForeground}" />

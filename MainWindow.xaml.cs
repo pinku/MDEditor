@@ -85,6 +85,15 @@ public partial class MainWindow : Window
 
     private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
+    private void CloseTab_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is DocumentModel doc)
+        {
+            _vm.ActiveDocument = doc;
+            _vm.CloseCommand.Execute(null);
+        }
+    }
+
     private void ThemeLight_Click(object sender, RoutedEventArgs e)
     {
         if (!_vm.IsLightTheme) _vm.ToggleThemeCommand.Execute(null);
@@ -144,6 +153,8 @@ public partial class MainWindow : Window
         MenuNew.Header = l["Menu.New"];
         MenuOpen.Header = l["Menu.Open"];
         MenuSave.Header = l["Menu.Save"];
+        MenuSaveAs.Header = l["Menu.SaveAs"];
+        MenuClose.Header = l["Menu.Close"];
         MenuExit.Header = l["Menu.Exit"];
         MenuView.Header = l["Menu.View"];
         MenuTheme.Header = l["Menu.Theme"];

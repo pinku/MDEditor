@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -21,71 +22,96 @@ public partial class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private string _markdownText = "";
-    private string _filePath = "";
+    private readonly MarkdownPipeline _pipeline;
+    private DocumentModel _activeDocument = null!;
+    private string _htmlContent = "";
     private string _statusText = "";
     private bool _isDarkTheme;
     private ViewMode _viewMode = ViewMode.Split;
-    private string _htmlContent = "";
 
-    private readonly MarkdownPipeline _pipeline;
+    public ObservableCollection<DocumentModel> Documents { get; } = new();
 
-    public MainViewModel()
+    public DocumentModel ActiveDocument
     {
-        _pipeline = new MarkdownPipelineBuilder()
-            .UseAdvancedExtensions()
-            .Build();
-
-        _statusText = Loc("Status.Ready");
-
-        NewCommand = new RelayCommand(_ => NewFile());
-        OpenCommand = new RelayCommand(_ => OpenFile());
-        SaveCommand = new RelayCommand(_ => SaveFile());
-        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
-        SetViewCommand = new RelayCommand(p => SetView(p?.ToString() ?? "split"));
-
-        // Default markdown
-        MarkdownText = "# Benvenuto in MDEditor\n\n" +
-                       "Un semplice editor **Markdown** con preview in tempo reale.\n\n" +
-                       "## Caratteristiche\n\n" +
-                       "- ✏️ Editor e preview affiancati\n" +
-                       "- 🌙 Tema chiaro e scuro (`Ctrl+T`)\n" +
-                       "- 📂 Apri e salva file `.md`\n" +
-                       "- 🧮 Supporto per **Latex** ($E=mc^2$)\n" +
-                       "- 📊 Tabelle, codice e diagrammi\n\n" +
-                       "### Codice\n\n" +
-                       "```csharp\n" +
-                       "Console.WriteLine(\"Hello MDEditor!\");\n" +
-                       "```\n\n" +
-                       "### Tabella\n\n" +
-                       "| Feature | Status |\n" +
-                       "|---------|--------|\n" +
-                       "| Markdown | ✅ |\n" +
-                       "| Temi | ✅ |\n" +
-                       "| Emoji | ✅ |\n";
-
-        UpdatePreview();
-    }
-
-    public string MarkdownText
-    {
-        get => _markdownText;
+        get => _activeDocument;
         set
         {
-            if (_markdownText != value)
-            {
-                _markdownText = value;
-                OnPropertyChanged();
-                UpdatePreview();
-                IsModified = true;
-            }
+            if (_activeDocument == value) return;
+
+            // Unsubscribe old
+            if (_activeDocument != null)
+                _activeDocument.PropertyChanged -= OnDocPropertyChanged;
+
+            _activeDocument = value;
+
+            // Subscribe new
+            if (_activeDocument != null)
+                _activeDocument.PropertyChanged += OnDocPropertyChanged;
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MarkdownText));
+            OnPropertyChanged(nameof(FilePath));
+            OnPropertyChanged(nameof(IsModified));
+            UpdatePreview();
+            UpdateTitle();
+            UpdateStatus();
+        }
+    }
+
+    private void OnDocPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DocumentModel.Content))
+        {
+            OnPropertyChanged(nameof(MarkdownText));
+            UpdatePreview();
+        }
+        else if (e.PropertyName == nameof(DocumentModel.FilePath))
+        {
+            OnPropertyChanged(nameof(FilePath));
+        }
+        else if (e.PropertyName == nameof(DocumentModel.IsModified))
+        {
+            OnPropertyChanged(nameof(IsModified));
+        }
+        else if (e.PropertyName == nameof(DocumentModel.Title))
+        {
+            UpdateTitle();
+        }
+    }
+
+    // Passthrough properties for XAML bindings
+    public string MarkdownText
+    {
+        get => ActiveDocument?.Content ?? "";
+        set
+        {
+            if (ActiveDocument != null && ActiveDocument.Content != value)
+                ActiveDocument.Content = value;
         }
     }
 
     public string FilePath
     {
-        get => _filePath;
-        set { _filePath = value; OnPropertyChanged(); }
+        get => ActiveDocument?.FilePath ?? "";
+        set
+        {
+            if (ActiveDocument != null)
+                ActiveDocument.FilePath = value;
+            OnPropertyChanged();
+            UpdateTitle();
+        }
+    }
+
+    public bool IsModified
+    {
+        get => ActiveDocument?.IsModified ?? false;
+        set
+        {
+            if (ActiveDocument != null)
+                ActiveDocument.IsModified = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(WindowTitle));
+        }
     }
 
     public string StatusText
@@ -114,12 +140,19 @@ public partial class MainViewModel : INotifyPropertyChanged
         set { _htmlContent = value; OnPropertyChanged(); }
     }
 
-    private bool _isModified;
-    public bool IsModified
+    public string WindowTitle
     {
-        get => _isModified;
-        set { _isModified = value; OnPropertyChanged(); UpdateTitle(); }
+        get
+        {
+            var title = "MDEditor";
+            if (ActiveDocument != null && !string.IsNullOrEmpty(ActiveDocument.FilePath))
+                title += $" - {Path.GetFileName(ActiveDocument.FilePath)}";
+            if (ActiveDocument?.IsModified == true) title += " *";
+            return title;
+        }
     }
+
+    public bool HasDocuments => Documents.Count > 0;
 
     // View mode properties
     public bool IsSplitView
@@ -143,12 +176,42 @@ public partial class MainViewModel : INotifyPropertyChanged
     public ICommand NewCommand { get; }
     public ICommand OpenCommand { get; }
     public ICommand SaveCommand { get; }
+    public ICommand SaveAsCommand { get; }
+    public ICommand CloseCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand SetViewCommand { get; }
 
+    public MainViewModel()
+    {
+        _pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .Build();
+
+        _statusText = Loc("Status.Ready");
+
+        NewCommand = new RelayCommand(_ => NewFile());
+        OpenCommand = new RelayCommand(_ => OpenFile());
+        SaveCommand = new RelayCommand(_ => SaveFile());
+        SaveAsCommand = new RelayCommand(_ => SaveAsFile());
+        CloseCommand = new RelayCommand(_ => CloseActiveDocument());
+        ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
+        SetViewCommand = new RelayCommand(p => SetView(p?.ToString() ?? "split"));
+
+        // Start with one empty document with welcome text
+        var doc = new DocumentModel("", WelcomeText) { IsModified = false };
+        Documents.Add(doc);
+        ActiveDocument = doc;
+        StatusText = Loc("Status.Ready");
+
+        Documents.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasDocuments));
+        };
+    }
+
     private void NewFile()
     {
-        if (IsModified)
+        if (ActiveDocument?.IsModified == true)
         {
             var result = MessageBox.Show(Loc("Dialog.SaveQuestion"), "MDEditor",
                 MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
@@ -156,15 +219,15 @@ public partial class MainViewModel : INotifyPropertyChanged
             else if (result == MessageBoxResult.Cancel) return;
         }
 
-        MarkdownText = "";
-        FilePath = "";
-        IsModified = false;
+        var doc = new DocumentModel();
+        Documents.Add(doc);
+        ActiveDocument = doc;
         StatusText = Loc("Status.NewFile");
     }
 
     private void OpenFile()
     {
-        if (IsModified)
+        if (ActiveDocument?.IsModified == true)
         {
             var result = MessageBox.Show(Loc("Dialog.SaveQuestion"), "MDEditor",
                 MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
@@ -175,23 +238,63 @@ public partial class MainViewModel : INotifyPropertyChanged
         var dlg = new OpenFileDialog
         {
             Filter = Loc("File.Filter"),
-            DefaultExt = ".md"
+            DefaultExt = ".md",
+            Multiselect = true
         };
 
         if (dlg.ShowDialog() == true)
         {
-            LoadFile(dlg.FileName);
+            bool first = true;
+            foreach (var path in dlg.FileNames)
+            {
+                // Check if already open
+                var existing = Documents.FirstOrDefault(d =>
+                    string.Equals(d.FilePath, path, StringComparison.OrdinalIgnoreCase));
+                if (existing != null)
+                {
+                    ActiveDocument = existing;
+                    continue;
+                }
+
+                try
+                {
+                    var content = File.ReadAllText(path);
+                    var doc = new DocumentModel(path, content) { IsModified = false };
+                    Documents.Add(doc);
+                    if (first)
+                    {
+                        ActiveDocument = doc;
+                        first = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"{Loc("Dialog.ErrorOpen")}: {ex.Message}", "MDEditor",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            UpdateStatus();
         }
     }
 
     public void LoadFile(string path)
     {
+        // Check if already open
+        var existing = Documents.FirstOrDefault(d =>
+            string.Equals(d.FilePath, path, StringComparison.OrdinalIgnoreCase));
+        if (existing != null)
+        {
+            ActiveDocument = existing;
+            return;
+        }
+
         try
         {
-            MarkdownText = File.ReadAllText(path);
-            FilePath = path;
-            IsModified = false;
-            StatusText = string.Format(Loc("Status.Opened"), Path.GetFileName(path));
+            var content = File.ReadAllText(path);
+            var doc = new DocumentModel(path, content) { IsModified = false };
+            Documents.Add(doc);
+            ActiveDocument = doc;
+            UpdateStatus();
         }
         catch (Exception ex)
         {
@@ -202,30 +305,86 @@ public partial class MainViewModel : INotifyPropertyChanged
 
     private void SaveFile()
     {
-        if (string.IsNullOrEmpty(FilePath))
-        {
-            var dlg = new SaveFileDialog
-            {
-                Filter = Loc("File.Filter"),
-                DefaultExt = ".md",
-                FileName = "documento.md"
-            };
+        if (ActiveDocument == null) return;
 
-            if (dlg.ShowDialog() != true) return;
-            FilePath = dlg.FileName;
+        if (string.IsNullOrEmpty(ActiveDocument.FilePath))
+        {
+            SaveAsFile();
+            return;
         }
 
+        DoSave(ActiveDocument);
+    }
+
+    private void SaveAsFile()
+    {
+        if (ActiveDocument == null) return;
+
+        var dlg = new SaveFileDialog
+        {
+            Filter = Loc("File.Filter"),
+            DefaultExt = ".md",
+            FileName = string.IsNullOrEmpty(ActiveDocument.FilePath)
+                ? "documento.md"
+                : Path.GetFileName(ActiveDocument.FilePath)
+        };
+
+        if (dlg.ShowDialog() == true)
+        {
+            ActiveDocument.FilePath = dlg.FileName;
+            DoSave(ActiveDocument);
+        }
+    }
+
+    private void DoSave(DocumentModel doc)
+    {
         try
         {
-            File.WriteAllText(FilePath, MarkdownText);
-            IsModified = false;
-            StatusText = string.Format(Loc("Status.Saved"), Path.GetFileName(FilePath));
+            File.WriteAllText(doc.FilePath, doc.Content);
+            doc.IsModified = false;
+            StatusText = string.Format(Loc("Status.Saved"), Path.GetFileName(doc.FilePath));
+            UpdateTitle();
         }
         catch (Exception ex)
         {
             MessageBox.Show($"{Loc("Dialog.ErrorSave")}: {ex.Message}", "MDEditor",
                 MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    public void CloseActiveDocument()
+    {
+        if (ActiveDocument == null) return;
+
+        if (ActiveDocument.IsModified)
+        {
+            var result = MessageBox.Show(Loc("Dialog.SaveQuestion"), "MDEditor",
+                MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes) SaveFile();
+            else if (result == MessageBoxResult.Cancel) return;
+        }
+
+        var idx = Documents.IndexOf(ActiveDocument);
+        Documents.RemoveAt(idx);
+
+        if (Documents.Count == 0)
+        {
+            NewFile();
+        }
+        else
+        {
+            // Activate nearest tab
+            ActiveDocument = Documents[Math.Min(idx, Documents.Count - 1)];
+        }
+    }
+
+    private void UpdateStatus()
+    {
+        if (ActiveDocument == null) return;
+        if (!string.IsNullOrEmpty(ActiveDocument.FilePath))
+            StatusText = string.Format(Loc("Status.Opened"), Path.GetFileName(ActiveDocument.FilePath));
+        else
+            StatusText = Loc("Status.Ready");
     }
 
     private static string Loc(string key) => LocalizationManager.Instance[key];
@@ -266,19 +425,17 @@ public partial class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsEditOnly));
         OnPropertyChanged(nameof(IsPreviewOnly));
 
-        // Notify MainWindow to adjust column visibility
         ViewModeChanged?.Invoke(this, _viewMode);
     }
 
     public event EventHandler<ViewMode>? ViewModeChanged;
 
-    private void UpdatePreview()
+    public void UpdatePreview()
     {
         try
         {
-            // Replace custom :fa[name] syntax with Font Awesome icons before markdown parsing
-            // Must be done on source so markdown sees it as raw HTML
-            var processed = FaRegex().Replace(MarkdownText, "<i class='fa-solid fa-$1'></i>");
+            var text = ActiveDocument?.Content ?? "";
+            var processed = FaRegex().Replace(text, "<i class='fa-solid fa-$1'></i>");
             var htmlBody = Markdown.ToHtml(processed, _pipeline);
             var css = IsDarkTheme ? DarkCss : LightCss;
             var faLink = @"<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>";
@@ -299,11 +456,7 @@ public partial class MainViewModel : INotifyPropertyChanged
 
     private void UpdateTitle()
     {
-        var title = "MDEditor";
-        if (!string.IsNullOrEmpty(FilePath))
-            title += $" - {Path.GetFileName(FilePath)}";
-        if (IsModified) title += " *";
-        ViewTitleChanged?.Invoke(this, title);
+        ViewTitleChanged?.Invoke(this, WindowTitle);
     }
 
     public event EventHandler<string>? ViewTitleChanged;
@@ -320,6 +473,27 @@ public partial class MainViewModel : INotifyPropertyChanged
         Application.Current.Resources.MergedDictionaries.Add(dict);
         UpdatePreview();
     }
+
+    private const string WelcomeText = "# Benvenuto in MDEditor\n\n" +
+                       "Un semplice editor **Markdown** con preview in tempo reale.\n\n" +
+                       "## Caratteristiche\n\n" +
+                       "- ✏️ Editor e preview affiancati\n" +
+                       "- 🌙 Tema chiaro e scuro (`Ctrl+T`)\n" +
+                       "- 📂 Multi-file con schede\n" +
+                       "- 📂 Apri e salva file `.md`\n" +
+                       "- 🧮 Supporto per **Latex** ($E=mc^2$)\n" +
+                       "- 📊 Tabelle, codice e diagrammi\n\n" +
+                       "### Codice\n\n" +
+                       "```csharp\n" +
+                       "Console.WriteLine(\"Hello MDEditor!\");\n" +
+                       "```\n\n" +
+                       "### Tabella\n\n" +
+                       "| Feature | Status |\n" +
+                       "|---------|--------|\n" +
+                       "| Markdown | ✅ |\n" +
+                       "| Temi | ✅ |\n" +
+                       "| Multi-file | ✅ |\n" +
+                       "| Emoji | ✅ |\n";
 
     private const string LightCss = @"
 * { box-sizing: border-box; margin: 0; padding: 0; }
