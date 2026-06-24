@@ -21,6 +21,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // Show version
+        var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+        VersionLabel.Text = $"v{ver?.ToString() ?? "?"}";
+
         _vm = new MainViewModel();
         DataContext = _vm;
 

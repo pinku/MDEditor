@@ -323,6 +323,11 @@
                            Foreground="{DynamicResource StatusBarForeground}" />
             </StatusBarItem>
             <Separator Style="{StaticResource {x:Static StatusBar.SeparatorStyleKey}}" />
+            <StatusBarItem>
+                <TextBlock x:Name="VersionLabel" Text="" FontSize="11"
+                           Foreground="{DynamicResource StatusBarForeground}" Opacity="0.5" />
+            </StatusBarItem>
+            <Separator Style="{StaticResource {x:Static StatusBar.SeparatorStyleKey}}" />
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Text="{Binding FilePath}" FontSize="11"
                            Foreground="{DynamicResource StatusBarForeground}" Opacity="0.7" />
