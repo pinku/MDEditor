@@ -180,18 +180,23 @@ public partial class MainViewModel : INotifyPropertyChanged
 
         if (dlg.ShowDialog() == true)
         {
-            try
-            {
-                MarkdownText = File.ReadAllText(dlg.FileName);
-                FilePath = dlg.FileName;
-                IsModified = false;
-                StatusText = string.Format(Loc("Status.Opened"), Path.GetFileName(dlg.FileName));
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"{Loc("Dialog.ErrorOpen")}: {ex.Message}", "MDEditor",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            LoadFile(dlg.FileName);
+        }
+    }
+
+    public void LoadFile(string path)
+    {
+        try
+        {
+            MarkdownText = File.ReadAllText(path);
+            FilePath = path;
+            IsModified = false;
+            StatusText = string.Format(Loc("Status.Opened"), Path.GetFileName(path));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"{Loc("Dialog.ErrorOpen")}: {ex.Message}", "MDEditor",
+                MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

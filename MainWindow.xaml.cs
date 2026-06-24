@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -16,7 +17,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _vm;
     private bool _isReversed;
 
-    public MainWindow()
+    public MainWindow(string? fileToOpen = null)
     {
         InitializeComponent();
 
@@ -29,6 +30,10 @@ public partial class MainWindow : Window
         InitializeWebView();
         InitializeFromSettings();
         SetupFormatShortcuts();
+
+        // If launched via double-click on an .md file, open it
+        if (!string.IsNullOrEmpty(fileToOpen) && File.Exists(fileToOpen))
+            _vm.LoadFile(fileToOpen);
     }
 
     private void InitializeFromSettings()
