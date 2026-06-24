@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _vm;
     private bool _isReversed;
 
-    public MainWindow(string? fileToOpen = null)
+    public MainWindow()
     {
         InitializeComponent();
 
@@ -32,6 +32,7 @@ public partial class MainWindow : Window
         SetupFormatShortcuts();
 
         // If launched via double-click on an .md file, open it
+        var fileToOpen = App.FileToOpen;
         if (!string.IsNullOrEmpty(fileToOpen) && File.Exists(fileToOpen))
             _vm.LoadFile(fileToOpen);
     }
