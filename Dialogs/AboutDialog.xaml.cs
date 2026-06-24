@@ -39,7 +39,9 @@ public partial class AboutDialog : Window
         }
         else
         {
-            CreditsLink.Visibility = Visibility.Collapsed;
+            // Hyperlink is inside a TextBlock; hide the parent TextBlock
+            if (CreditsLink.Parent is System.Windows.Controls.TextBlock parentTb)
+                parentTb.Visibility = Visibility.Collapsed;
         }
     }
 

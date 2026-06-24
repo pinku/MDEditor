@@ -1,12 +1,10 @@
 using System.ComponentModel;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace MDEditor.Localization;
 
 public enum AppLanguage { IT, EN }
 
-[DefaultMember("Item")]
 public class LocalizationManager : INotifyPropertyChanged
 {
     public static LocalizationManager Instance { get; } = new();

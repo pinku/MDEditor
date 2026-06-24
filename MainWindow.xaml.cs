@@ -41,10 +41,12 @@ public partial class MainWindow : Window
 
         // Language
         LocalizationManager.Instance.CurrentLang = settings.GetLanguage();
+        LocalizeUI();
         UpdateLangButton();
         UpdateLangMenuChecks();
         LocalizationManager.Instance.PropertyChanged += (_, _) =>
         {
+            LocalizeUI();
             UpdateLangButton();
             UpdateLangMenuChecks();
         };
@@ -101,9 +103,10 @@ public partial class MainWindow : Window
         LocalizationManager.Instance.CurrentLang = lang;
         App.Settings.Language = lang.ToString();
         App.Settings.Save();
+        LocalizeUI();
 
-        // Refresh status text (which is cached in VM)
-        _vm.StatusText = lang == AppLanguage.EN ? "Ready" : "Pronto";
+        // Refresh status and format tooltips
+        _vm.StatusText = LocalizationManager.Instance["Status.Ready"];
     }
 
     private void UpdateLangButton()
@@ -116,6 +119,67 @@ public partial class MainWindow : Window
     {
         MenuLangIT.IsChecked = LocalizationManager.Instance.CurrentLang == AppLanguage.IT;
         MenuLangEN.IsChecked = LocalizationManager.Instance.CurrentLang == AppLanguage.EN;
+    }
+
+    private void LocalizeUI()
+    {
+        var l = LocalizationManager.Instance;
+
+        // Menu
+        MenuFile.Header = l["Menu.File"];
+        MenuNew.Header = l["Menu.New"];
+        MenuOpen.Header = l["Menu.Open"];
+        MenuSave.Header = l["Menu.Save"];
+        MenuExit.Header = l["Menu.Exit"];
+        MenuView.Header = l["Menu.View"];
+        MenuTheme.Header = l["Menu.Theme"];
+        MenuThemeLight.Header = l["Menu.ThemeLight"];
+        MenuThemeDark.Header = l["Menu.ThemeDark"];
+        MenuLanguage.Header = l["Menu.Language"];
+        MenuSwap.Header = l["Menu.Swap"];
+        MenuHelp.Header = l["Menu.Help"];
+        MenuAbout.Header = l["Menu.About"];
+
+        // Toolbar buttons
+        BtnNew.ToolTip = l["Toolbar.New"];
+        BtnOpen.ToolTip = l["Toolbar.Open"];
+        BtnSave.ToolTip = l["Toolbar.Save"];
+        BtnTheme.ToolTip = l["Toolbar.Theme"];
+        BtnSwap.ToolTip = l["Toolbar.Swap"];
+        BtnLang.ToolTip = l["Menu.Language"];
+
+        // Toolbar labels
+        LblNew.Text = l["Menu.New"];
+        LblOpen.Text = l["Menu.Open"];
+        LblSave.Text = l["Menu.Save"];
+        LblView.Text = l["Toolbar.View"];
+        LblSplit.Text = l["Toolbar.Split"];
+        LblEditor.Text = l["Toolbar.Editor"];
+        LblPreview.Text = l["Toolbar.Preview"];
+
+        // Editor/Preview headers
+        EditorHeaderText.Text = l["Editor.Header"];
+        PreviewHeaderText.Text = l["Preview.Header"];
+
+        // Format toolbar tooltips (in order of appearance)
+        var formatKeys = new[]
+        {
+            "Format.Bold", "Format.Italic", "Format.Strike",
+            "Format.H1", "Format.H2", "Format.H3",
+            "Format.UL", "Format.OL", "Format.Check",
+            "Format.Link", "Format.Image",
+            "Format.Code", "Format.CodeBlock",
+            "Format.Icon",
+            "Format.Quote", "Format.Table", "Format.AddRow", "Format.AddCol", "Format.HR"
+        };
+        int ki = 0;
+        foreach (var child in FormatToolbar.Children)
+        {
+            if (child is Button btn && ki < formatKeys.Length)
+            {
+                btn.ToolTip = l[formatKeys[ki++]];
+            }
+        }
     }
 
     private void SwapPanels_Click(object sender, RoutedEventArgs e)
@@ -475,7 +539,7 @@ public partial class MainWindow : Window
 
     private void UpdateThemeButtonContent()
     {
-        var sp = ThemeButton.Content as StackPanel;
+        var sp = BtnTheme.Content as StackPanel;
         if (sp != null && sp.Children.Count >= 2)
         {
             var emoji = sp.Children[0] as TextBlock;
