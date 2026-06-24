@@ -36,6 +36,14 @@ Editor e viewer **Markdown** con preview in tempo reale, temi chiaro/scuro, supp
 
 ## 🚀 Installazione
 
+### Download diretto
+
+Scarica l'ultima release da [GitHub Releases](https://github.com/pinku/MDEditor/releases/latest):
+
+📥 [**MDEditor-v1.1.0-win-x64.zip**](https://github.com/pinku/MDEditor/releases/download/v1.1.0/MDEditor-v1.1.0-win-x64.zip) (~61 MB)
+
+Estrai lo ZIP ed esegui `MDEditor.exe`. Richiede [WebView2 Runtime](https://go.microsoft.com/fwlink/p/?LinkId=2124703) (già incluso in Windows 11).
+
 ### Prerequisiti
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)

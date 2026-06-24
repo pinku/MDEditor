@@ -8,9 +8,9 @@ publish/
 *.vs/
 .vscode/
 
-## NuGet
-*.nupkg
-**/packages/*
+## Publish
+publish/
+*.zip
 
 ## OS
 Thumbs.db
