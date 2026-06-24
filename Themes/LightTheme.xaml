@@ -1,0 +1,113 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Modern Light Theme -->
+    <Color x:Key="AccentColor">#0078D4</Color>
+    <SolidColorBrush x:Key="AccentBrush" Color="#0078D4" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#106EBE" />
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="#005A9E" />
+
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#FAFAFA" />
+    <SolidColorBrush x:Key="ForegroundBrush" Color="#1A1A1A" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="PanelHeaderBrush" Color="#F0F0F0" />
+    <SolidColorBrush x:Key="HeaderForegroundBrush" Color="#242424" />
+    <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0" />
+    <SolidColorBrush x:Key="ToolBarBackground" Color="#F3F3F3" />
+    <SolidColorBrush x:Key="ToolBarBorder" Color="#D0D0D0" />
+    <SolidColorBrush x:Key="ToolBarSeparatorBrush" Color="#C0C0C0" />
+    <SolidColorBrush x:Key="SplitterBrush" Color="#E0E0E0" />
+    <SolidColorBrush x:Key="SplitterHoverBrush" Color="#0078D4" />
+    <SolidColorBrush x:Key="StatusBarBackground" Color="#F3F3F3" />
+    <SolidColorBrush x:Key="StatusBarForeground" Color="#555555" />
+    <SolidColorBrush x:Key="EditorBackground" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="EditorForeground" Color="#1A1A1A" />
+    <SolidColorBrush x:Key="EditorLineNumBrush" Color="#999999" />
+    <SolidColorBrush x:Key="FormatToolbarBackground" Color="#F8F8F8" />
+    <SolidColorBrush x:Key="FormatToolbarBorder" Color="#E0E0E0" />
+
+    <!-- Flat button style -->
+    <Style x:Key="ModernButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                            CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#E8E8E8" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#D5D5D5" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Format toolbar button (compact, icon-only) -->
+    <Style x:Key="FormatButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- Toolbar separator style -->
+    <Style x:Key="ToolbarSeparator" TargetType="Separator">
+        <Setter Property="Width" Value="1" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Background" Value="{StaticResource ToolBarSeparatorBrush}" />
+        <Setter Property="Margin" Value="4,0" />
+    </Style>
+
+    <!-- Window -->
+    <Style TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
+        <Setter Property="FontFamily" Value="Segoe UI, sans-serif" />
+    </Style>
+
+    <!-- Top toolbar -->
+    <Style TargetType="ToolBar">
+        <Setter Property="Background" Value="{StaticResource ToolBarBackground}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ToolBarBorder}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- Editor textbox -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource EditorBackground}" />
+        <Setter Property="Foreground" Value="{StaticResource EditorForeground}" />
+        <Setter Property="CaretBrush" Value="{StaticResource EditorForeground}" />
+    </Style>
+
+    <!-- StatusBar -->
+    <Style TargetType="StatusBar">
+        <Setter Property="Background" Value="{StaticResource StatusBarBackground}" />
+        <Setter Property="Foreground" Value="{StaticResource StatusBarForeground}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="BorderBrush" Value="{StaticResource ToolBarBorder}" />
+    </Style>
+
+    <Style TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}" />
+    </Style>
+</ResourceDictionary>

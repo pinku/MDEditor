@@ -1,0 +1,20 @@
+{
+  "name": "mdeditor",
+  "version": "1.1.0",
+  "description": "Editor e viewer Markdown con preview in tempo reale, temi chiaro/scuro, supporto tabelle, emoji e icone Font Awesome.",
+  "author": "Diego Pianarosa",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pinku/MDEditor.git"
+  },
+  "scripts": {
+    "build": "dotnet build MDEditor.csproj -c Release",
+    "publish": "dotnet publish MDEditor.csproj -c Release -o ./publish",
+    "publish:win": "dotnet publish MDEditor.csproj -c Release -r win-x64 -o ./publish/win-x64 --self-contained true",
+    "publish:linux": "dotnet publish MDEditor.csproj -c Release -r linux-x64 -o ./publish/linux-x64 --self-contained true",
+    "run": "dotnet run --project MDEditor.csproj",
+    "clean": "dotnet clean MDEditor.csproj && rm -rf publish bin obj"
+  },
+  "keywords": ["markdown", "editor", "wpf", "dotnet", "viewer"]
+}

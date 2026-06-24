@@ -1,0 +1,343 @@
+<Window x:Class="MDEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:loc="clr-namespace:MDEditor.Localization"
+        Title="MDEditor" Height="650" Width="1100"
+        MinHeight="400" MinWidth="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}">
+
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenCommand}" />
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewCommand}" />
+        <KeyBinding Key="T" Modifiers="Control" Command="{Binding ToggleThemeCommand}" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ===== MENU BAR ===== -->
+        <Menu Grid.Row="0" Background="{DynamicResource ToolBarBackground}"
+              BorderBrush="{DynamicResource ToolBarBorder}" BorderThickness="0,0,0,1">
+            <MenuItem Header="{Binding [Menu.File], Source={x:Static loc:LocalizationManager.Instance}}">
+                <MenuItem Header="{Binding [Menu.New], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Command="{Binding NewCommand}" InputGestureText="Ctrl+N" />
+                <MenuItem Header="{Binding [Menu.Open], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Command="{Binding OpenCommand}" InputGestureText="Ctrl+O" />
+                <MenuItem Header="{Binding [Menu.Save], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Command="{Binding SaveCommand}" InputGestureText="Ctrl+S" />
+                <Separator />
+                <MenuItem Header="{Binding [Menu.Exit], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Click="Exit_Click" InputGestureText="Alt+F4" />
+            </MenuItem>
+
+            <MenuItem Header="{Binding [Menu.View], Source={x:Static loc:LocalizationManager.Instance}}">
+                <MenuItem Header="{Binding [Menu.Theme], Source={x:Static loc:LocalizationManager.Instance}}">
+                    <MenuItem Header="{Binding [Menu.ThemeLight], Source={x:Static loc:LocalizationManager.Instance}}"
+                              Click="ThemeLight_Click" IsChecked="{Binding IsLightTheme}" />
+                    <MenuItem Header="{Binding [Menu.ThemeDark], Source={x:Static loc:LocalizationManager.Instance}}"
+                              Click="ThemeDark_Click" IsChecked="{Binding IsDarkTheme}" />
+                </MenuItem>
+                <MenuItem Header="{Binding [Menu.Language], Source={x:Static loc:LocalizationManager.Instance}}">
+                    <MenuItem Header="{Binding [Menu.LangIT], Source={x:Static loc:LocalizationManager.Instance}}"
+                              Click="LangIT_Click" x:Name="MenuLangIT" />
+                    <MenuItem Header="{Binding [Menu.LangEN], Source={x:Static loc:LocalizationManager.Instance}}"
+                              Click="LangEN_Click" x:Name="MenuLangEN" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="{Binding [Menu.Swap], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Click="SwapPanels_Click" />
+            </MenuItem>
+
+            <MenuItem Header="{Binding [Menu.Help], Source={x:Static loc:LocalizationManager.Instance}}">
+                <MenuItem Header="{Binding [Menu.About], Source={x:Static loc:LocalizationManager.Instance}}"
+                          Click="About_Click" />
+            </MenuItem>
+        </Menu>
+
+        <!-- ===== TOP TOOLBAR ===== -->
+        <ToolBar Grid.Row="1" Padding="4,2" SnapsToDevicePixels="True">
+            <ToolBar.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource ModernButton}" />
+            </ToolBar.Resources>
+
+            <Button Command="{Binding NewCommand}"
+                    ToolTip="{Binding [Toolbar.New], Source={x:Static loc:LocalizationManager.Instance}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📄" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock Text="{Binding [Menu.New], Source={x:Static loc:LocalizationManager.Instance}}" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding OpenCommand}"
+                    ToolTip="{Binding [Toolbar.Open], Source={x:Static loc:LocalizationManager.Instance}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📂" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock Text="{Binding [Menu.Open], Source={x:Static loc:LocalizationManager.Instance}}" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding SaveCommand}"
+                    ToolTip="{Binding [Toolbar.Save], Source={x:Static loc:LocalizationManager.Instance}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="💾" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock Text="{Binding [Menu.Save], Source={x:Static loc:LocalizationManager.Instance}}" />
+                </StackPanel>
+            </Button>
+
+            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+            <Button Command="{Binding ToggleThemeCommand}"
+                    ToolTip="{Binding [Toolbar.Theme], Source={x:Static loc:LocalizationManager.Instance}}"
+                    x:Name="ThemeButton">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🌙" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock Text="Dark" />
+                </StackPanel>
+            </Button>
+
+            <!-- Swap panels -->
+            <Button Click="SwapPanels_Click"
+                    ToolTip="{Binding [Toolbar.Swap], Source={x:Static loc:LocalizationManager.Instance}}">
+                <TextBlock Text="⇄" FontSize="16" />
+            </Button>
+
+            <!-- Language -->
+            <Button Click="LangToggle_Click"
+                    ToolTip="{Binding [Menu.Language], Source={x:Static loc:LocalizationManager.Instance}}">
+                <TextBlock x:Name="LangButton" Text="🇮🇹 IT" FontSize="12" />
+            </Button>
+
+            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+            <TextBlock Text="{Binding [Toolbar.View], Source={x:Static loc:LocalizationManager.Instance}}"
+                       VerticalAlignment="Center" Margin="6,0,4,0" FontSize="12"
+                       Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" />
+            <RadioButton Command="{Binding SetViewCommand}" CommandParameter="split"
+                         IsChecked="{Binding IsSplitView}" Margin="2,0" FontSize="12">
+                <TextBlock Text="{Binding [Toolbar.Split], Source={x:Static loc:LocalizationManager.Instance}}" FontSize="12" />
+            </RadioButton>
+            <RadioButton Command="{Binding SetViewCommand}" CommandParameter="edit"
+                         IsChecked="{Binding IsEditOnly}" Margin="2,0" FontSize="12">
+                <TextBlock Text="{Binding [Toolbar.Editor], Source={x:Static loc:LocalizationManager.Instance}}" FontSize="12" />
+            </RadioButton>
+            <RadioButton Command="{Binding SetViewCommand}" CommandParameter="preview"
+                         IsChecked="{Binding IsPreviewOnly}" Margin="2,0" FontSize="12">
+                <TextBlock Text="{Binding [Toolbar.Preview], Source={x:Static loc:LocalizationManager.Instance}}" FontSize="12" />
+            </RadioButton>
+        </ToolBar>
+
+        <!-- ===== MAIN CONTENT: Editor + Preview ===== -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ===== EDITOR PANEL ===== -->
+            <Border x:Name="EditorBorder" Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Margin="4,4,2,4" CornerRadius="6" Background="{DynamicResource SurfaceBrush}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.06" />
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Editor header -->
+                    <Border Grid.Row="0" Background="{DynamicResource PanelHeaderBrush}"
+                            CornerRadius="6,6,0,0" Padding="10,5">
+                        <TextBlock Text="{Binding [Editor.Header], Source={x:Static loc:LocalizationManager.Instance}}"
+                                   FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{DynamicResource HeaderForegroundBrush}" />
+                    </Border>
+
+                    <!-- ===== FORMATTING TOOLBAR ===== -->
+                    <Border Grid.Row="1" Background="{DynamicResource FormatToolbarBackground}"
+                            BorderBrush="{DynamicResource FormatToolbarBorder}"
+                            BorderThickness="0,1,0,1" Padding="4,2">
+                        <WrapPanel>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Bold], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatBold_Click">
+                                <TextBlock Text="B" FontWeight="Bold" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Italic], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatItalic_Click">
+                                <TextBlock Text="I" FontStyle="Italic" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Strike], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatStrike_Click">
+                                <TextBlock Text="S" TextDecorations="Strikethrough" FontSize="13" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.H1], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatH1_Click">
+                                <TextBlock Text="H1" FontWeight="Bold" FontSize="13" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.H2], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatH2_Click">
+                                <TextBlock Text="H2" FontWeight="Bold" FontSize="12" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.H3], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatH3_Click">
+                                <TextBlock Text="H3" FontWeight="Bold" FontSize="11" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.UL], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatUL_Click">
+                                <TextBlock Text="•≡" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.OL], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatOL_Click">
+                                <TextBlock Text="1." FontWeight="Bold" FontSize="13" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Check], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatCheck_Click">
+                                <TextBlock Text="☑" FontSize="14" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Link], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatLink_Click">
+                                <TextBlock Text="🔗" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Image], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatImage_Click">
+                                <TextBlock Text="🖼" FontSize="14" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Code], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatCode_Click">
+                                <TextBlock Text="&lt;/&gt;" FontSize="12" FontFamily="Consolas" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.CodeBlock], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatCodeBlock_Click">
+                                <TextBlock Text="{}{ }" FontSize="13" FontFamily="Consolas" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Icon], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatIcon_Click">
+                                <TextBlock Text="😀" FontSize="15" />
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Quote], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatQuote_Click">
+                                <TextBlock Text="❝" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.Table], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatTableDialog_Click">
+                                <TextBlock Text="⊞" FontSize="14" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.AddRow], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatAddRow_Click">
+                                <TextBlock Text="⊞⁺" FontSize="13" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.AddCol], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatAddCol_Click">
+                                <TextBlock Text="⊞⁺ᶜ" FontSize="12" />
+                            </Button>
+                            <Button Style="{StaticResource FormatButton}"
+                                    ToolTip="{Binding [Format.HR], Source={x:Static loc:LocalizationManager.Instance}}"
+                                    Click="FormatHR_Click">
+                                <TextBlock Text="—" FontSize="14" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+
+                    <!-- Editor text area -->
+                    <TextBox Grid.Row="2" x:Name="EditorTextBox"
+                             Text="{Binding MarkdownText, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True" AcceptsTab="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Cascadia Code, Consolas, monospace"
+                             FontSize="14"
+                             BorderThickness="0" Margin="8,6"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"
+                             SpellCheck.IsEnabled="False"
+                             Background="Transparent"
+                             Foreground="{DynamicResource EditorForeground}"
+                             CaretBrush="{DynamicResource AccentBrush}" />
+                </Grid>
+            </Border>
+
+            <!-- Splitter -->
+            <GridSplitter x:Name="MainSplitter" Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
+                          Background="Transparent"
+                          BorderBrush="{DynamicResource SplitterBrush}"
+                          BorderThickness="1,0" />
+
+            <!-- ===== PREVIEW PANEL ===== -->
+            <Border x:Name="PreviewBorder" Grid.Column="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Margin="2,4,4,4" CornerRadius="6" Background="{DynamicResource SurfaceBrush}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.06" />
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0" Background="{DynamicResource PanelHeaderBrush}"
+                            CornerRadius="6,6,0,0" Padding="10,5">
+                        <TextBlock Text="{Binding [Preview.Header], Source={x:Static loc:LocalizationManager.Instance}}"
+                                   FontWeight="SemiBold" FontSize="12"
+                                   Foreground="{DynamicResource HeaderForegroundBrush}" />
+                    </Border>
+                    <wv2:WebView2 Grid.Row="1" x:Name="PreviewWebView" Margin="0" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ===== STATUS BAR ===== -->
+        <StatusBar Grid.Row="3" Padding="8,2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}" FontSize="11"
+                           Foreground="{DynamicResource StatusBarForeground}" />
+            </StatusBarItem>
+            <Separator Style="{StaticResource {x:Static StatusBar.SeparatorStyleKey}}" />
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="{Binding FilePath}" FontSize="11"
+                           Foreground="{DynamicResource StatusBarForeground}" Opacity="0.7" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

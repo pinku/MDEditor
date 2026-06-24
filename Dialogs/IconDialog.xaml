@@ -1,0 +1,108 @@
+<Window x:Class="MDEditor.Dialogs.IconDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Inserisci Icona / Emoji" Height="520" Width="680"
+        WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow"
+        ResizeMode="NoResize" ShowInTaskbar="False"
+        Background="{DynamicResource SurfaceBrush}">
+
+    <Window.Resources>
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="42" />
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="border" Property="TextElement.Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Titolo -->
+        <TextBlock Grid.Row="0" Text="Seleziona un'icona" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,10" />
+
+        <!-- Tabs Emoji / Font Awesome -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button x:Name="TabEmoji" Content="😀 Emoji" Width="100"
+                    Style="{StaticResource ModernButton}" Click="TabEmoji_Click"
+                    FontWeight="SemiBold" />
+            <Button x:Name="TabFA" Content="🎨 Font Awesome" Width="120"
+                    Style="{StaticResource ModernButton}" Click="TabFA_Click" Margin="6,0,0,0" />
+        </StackPanel>
+
+        <!-- Barra ricerca -->
+        <Border Grid.Row="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                CornerRadius="6" Padding="4,2" Margin="0,0,0,8">
+            <Grid>
+                <TextBlock x:Name="Placeholder" Text="🔍 Cerca..." Foreground="{DynamicResource ForegroundBrush}"
+                           Opacity="0.4" VerticalAlignment="Center" Margin="6,0,0,0"
+                           IsHitTestVisible="False" />
+                <TextBox x:Name="SearchBox" BorderThickness="0" Background="Transparent"
+                         FontSize="13" Padding="6,3"
+                         Foreground="{DynamicResource EditorForeground}"
+                         CaretBrush="{DynamicResource AccentBrush}"
+                         TextChanged="SearchBox_TextChanged" />
+            </Grid>
+        </Border>
+
+        <!-- Griglia icone con scroll -->
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <WrapPanel x:Name="IconGrid" Margin="0,4" />
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="4" Margin="0,10,0,0" Padding="10,8"
+                Background="{DynamicResource PanelHeaderBrush}" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="IconPreview" FontSize="24" Margin="0,0,10,0"
+                               VerticalAlignment="Center" />
+                    <TextBox x:Name="CodePreview" FontSize="13" FontFamily="Consolas"
+                             IsReadOnly="True" BorderThickness="0"
+                             Background="Transparent" Width="200"
+                             Foreground="{DynamicResource ForegroundBrush}"
+                             VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Button Grid.Column="1" Content="Annulla" Width="80"
+                        Style="{StaticResource ModernButton}" Click="Cancel_Click" Margin="0,0,8,0" />
+                <Button Grid.Column="2" Content="Inserisci" Width="80"
+                        Style="{StaticResource ModernButton}" Click="Insert_Click"
+                        FontWeight="SemiBold" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

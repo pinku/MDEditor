@@ -1,0 +1,77 @@
+<Window x:Class="MDEditor.Dialogs.AboutDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About MDEditor" Height="460" Width="500"
+        WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow"
+        ResizeMode="NoResize" ShowInTaskbar="False"
+        Background="{DynamicResource SurfaceBrush}">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- App icon + title -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,10,0,16">
+            <TextBlock Text="📝" FontSize="48" HorizontalAlignment="Center" />
+            <TextBlock x:Name="AppTitleText" Text="MDEditor" FontSize="22" FontWeight="Bold"
+                       HorizontalAlignment="Center" Margin="0,8,0,4"
+                       Foreground="{DynamicResource ForegroundBrush}" />
+            <TextBlock x:Name="VersionText" Text="Versione 1.1.0" FontSize="13"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource ForegroundBrush}" Opacity="0.6" />
+        </StackPanel>
+
+        <!-- Description -->
+        <TextBlock Grid.Row="1" x:Name="DescriptionText"
+                   FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
+                   Foreground="{DynamicResource ForegroundBrush}" Opacity="0.8"
+                   Margin="20,0,20,16" />
+
+        <!-- Technologies -->
+        <GroupBox Grid.Row="2" x:Name="TechGroupBox"
+                  BorderBrush="{DynamicResource BorderBrush}" Margin="20,0,20,12"
+                  Foreground="{DynamicResource ForegroundBrush}">
+            <GroupBox.Header>
+                <TextBlock x:Name="TechHeader" Text="Tecnologie" FontSize="12" FontWeight="SemiBold" />
+            </GroupBox.Header>
+            <WrapPanel Margin="6">
+                <TextBlock Text=".NET 10" FontSize="12" Margin="0,0,14,4"
+                           Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Text="WPF" FontSize="12" Margin="0,0,14,4"
+                           Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Text="Markdig" FontSize="12" Margin="0,0,14,4"
+                           Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Text="WebView2" FontSize="12" Margin="0,0,14,4"
+                           Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Text="Font Awesome 6" FontSize="12" Margin="0,0,14,4"
+                           Foreground="{DynamicResource AccentBrush}" />
+            </WrapPanel>
+        </GroupBox>
+
+        <!-- Credits -->
+        <StackPanel Grid.Row="3" Margin="20,4,20,0">
+            <TextBlock x:Name="CreditsHeader" FontSize="12" FontWeight="SemiBold"
+                       Margin="0,0,0,6" Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" />
+            <TextBlock x:Name="DeveloperName" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource ForegroundBrush}" Margin="4,0,0,2" />
+            <TextBlock x:Name="CreditsEmail" FontSize="12"
+                       Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" Margin="4,0,0,2" />
+            <TextBlock FontSize="12" Margin="4,6,0,0">
+                <Hyperlink x:Name="CreditsLink" Click="Hyperlink_Click" TextDecorations="None">
+                    <TextBlock x:Name="CreditsLinkText" TextDecorations="Underline" />
+                </Hyperlink>
+            </TextBlock>
+        </StackPanel>
+
+        <!-- Close button -->
+        <Button Grid.Row="4" x:Name="CloseButton" Content="OK" Width="100" Height="32"
+                HorizontalAlignment="Center" Margin="0,10,0,0"
+                Style="{StaticResource ModernButton}" FontWeight="SemiBold"
+                Click="Close_Click" />
+    </Grid>
+</Window>

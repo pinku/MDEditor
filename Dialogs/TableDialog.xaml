@@ -1,0 +1,99 @@
+<Window x:Class="MDEditor.Dialogs.TableDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Inserisci Tabella" Height="380" Width="420"
+        WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow"
+        ResizeMode="NoResize" ShowInTaskbar="False"
+        Background="{DynamicResource SurfaceBrush}">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Nuova Tabella" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,0,14" />
+
+        <!-- Dimensioni -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                <TextBlock Text="Colonne" FontSize="12" Foreground="{DynamicResource ForegroundBrush}"
+                           Opacity="0.7" Margin="0,0,0,4" />
+                <TextBox x:Name="ColsBox" Text="3" FontSize="14" Padding="8,6"
+                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                         Background="{DynamicResource EditorBackground}"
+                         Foreground="{DynamicResource EditorForeground}"
+                         CaretBrush="{DynamicResource AccentBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Righe" FontSize="12" Foreground="{DynamicResource ForegroundBrush}"
+                           Opacity="0.7" Margin="0,0,0,4" />
+                <TextBox x:Name="RowsBox" Text="3" FontSize="14" Padding="8,6"
+                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                         Background="{DynamicResource EditorBackground}"
+                         Foreground="{DynamicResource EditorForeground}"
+                         CaretBrush="{DynamicResource AccentBrush}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Allineamento -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,12">
+            <TextBlock Text="Allineamento colonne" FontSize="12"
+                       Foreground="{DynamicResource ForegroundBrush}" Opacity="0.7" Margin="0,0,0,6" />
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="AlignLeft" IsChecked="True" Margin="0,0,14,0"
+                             Foreground="{DynamicResource ForegroundBrush}" FontSize="13">
+                    <TextBlock Text="Sinistra" FontSize="13" />
+                </RadioButton>
+                <RadioButton x:Name="AlignCenter" Margin="0,0,14,0"
+                             Foreground="{DynamicResource ForegroundBrush}" FontSize="13">
+                    <TextBlock Text="Centro" FontSize="13" />
+                </RadioButton>
+                <RadioButton x:Name="AlignRight"
+                             Foreground="{DynamicResource ForegroundBrush}" FontSize="13">
+                    <TextBlock Text="Destra" FontSize="13" />
+                </RadioButton>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Opzioni -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,12">
+            <CheckBox x:Name="HasHeader" IsChecked="True"
+                      Foreground="{DynamicResource ForegroundBrush}" FontSize="13">
+                <TextBlock Text="Includi riga di intestazione" FontSize="13" />
+            </CheckBox>
+            <CheckBox x:Name="Striped" IsChecked="True"
+                      Foreground="{DynamicResource ForegroundBrush}" FontSize="13" Margin="0,4,0,0">
+                <TextBlock Text="Stile alternato (striped) nella preview" FontSize="13" />
+            </CheckBox>
+        </StackPanel>
+
+        <!-- Preview -->
+        <Border Grid.Row="4" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                CornerRadius="6" Padding="10" Margin="0,0,0,12"
+                Background="{DynamicResource EditorBackground}">
+            <TextBlock x:Name="PreviewText" FontFamily="Cascadia Code, Consolas, monospace"
+                       FontSize="11" Foreground="{DynamicResource EditorForeground}"
+                       Text="| Col1 | Col2 | Col3 |" />
+        </Border>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Annulla" Width="80" Style="{StaticResource ModernButton}"
+                    Click="Cancel_Click" Margin="0,0,8,0" />
+            <Button Content="Inserisci" Width="80" Style="{StaticResource ModernButton}"
+                    Click="Insert_Click" FontWeight="SemiBold" Margin="0,0,4,0" />
+        </StackPanel>
+    </Grid>
+</Window>
