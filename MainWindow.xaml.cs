@@ -653,9 +653,9 @@ public partial class MainWindow : Window
 
     private Grid? FindMainContentGrid()
     {
-        if (Content is Grid rootGrid && rootGrid.Children.Count > 2)
+        if (Content is Grid rootGrid && rootGrid.Children.Count > 3)
         {
-            if (rootGrid.Children[2] is Grid contentGrid)
+            if (rootGrid.Children[3] is Grid contentGrid)
                 return contentGrid;
         }
         return null;
