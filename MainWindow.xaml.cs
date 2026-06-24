@@ -31,6 +31,9 @@ public partial class MainWindow : Window
         InitializeFromSettings();
         SetupFormatShortcuts();
 
+        // Set window icon from exe
+        SetWindowIcon();
+
         // If launched via double-click on an .md file, open it
         var fileToOpen = App.FileToOpen;
         if (!string.IsNullOrEmpty(fileToOpen) && File.Exists(fileToOpen))
@@ -634,6 +637,24 @@ public partial class MainWindow : Window
                 return contentGrid;
         }
         return null;
+    }
+
+    private void SetWindowIcon()
+    {
+        try
+        {
+            var exeDir = AppContext.BaseDirectory;
+            var iconPath = System.IO.Path.Combine(exeDir, "Resources", "app.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                this.Icon = System.Windows.Media.Imaging.BitmapFrame.Create(
+                    new Uri(iconPath, UriKind.Absolute));
+            }
+        }
+        catch
+        {
+            // Non-critical: app works without icon
+        }
     }
 }
 
