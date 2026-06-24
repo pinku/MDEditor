@@ -27,3 +27,6 @@ Thumbs.db
 
 ## Graphify
 graphify-out/
+
+## Secrets
+.github-token.txt

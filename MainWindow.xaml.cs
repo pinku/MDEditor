@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -584,7 +585,13 @@ public partial class MainWindow : Window
     private void UpdateWebViewContent()
     {
         if (PreviewWebView.CoreWebView2 != null)
+        {
+            // Set background color BEFORE navigating to prevent white flash
+            PreviewWebView.DefaultBackgroundColor = _vm.IsDarkTheme
+                ? System.Drawing.Color.FromArgb(30, 30, 30)
+                : System.Drawing.Color.White;
             PreviewWebView.CoreWebView2.NavigateToString(_vm.HtmlContent);
+        }
     }
 
     private static string Loc(string key) => LocalizationManager.Instance[key];
