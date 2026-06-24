@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using MDEditor.Dialogs;
 using MDEditor.Localization;
 using MDEditor.Models;
@@ -43,6 +44,13 @@ public partial class MainWindow : Window
         var fileToOpen = App.FileToOpen;
         if (!string.IsNullOrEmpty(fileToOpen) && File.Exists(fileToOpen))
             _vm.LoadFile(fileToOpen);
+
+        // Scroll sync: editor → preview
+        EditorTextBox.Loaded += (_, _) =>
+        {
+            var sv = FindVisualChild<ScrollViewer>(EditorTextBox);
+            if (sv != null) sv.ScrollChanged += OnEditorScrollChanged;
+        };
     }
 
     private void InitializeFromSettings()
@@ -292,9 +300,9 @@ public partial class MainWindow : Window
     private void FormatBold() => WrapSelection("**", "**", "testo");
     private void FormatItalic() => WrapSelection("*", "*", "testo");
     private void FormatStrike() => WrapSelection("~~", "~~", "testo");
-    private void FormatH1() => PrefixLine("# ", "Titolo 1");
-    private void FormatH2() => PrefixLine("## ", "Titolo 2");
-    private void FormatH3() => PrefixLine("### ", "Titolo 3");
+    private void FormatH1() => PrefixLine("# ", "");
+    private void FormatH2() => PrefixLine("## ", "");
+    private void FormatH3() => PrefixLine("### ", "");
     private void FormatUL() => PrefixLine("- ", "Elemento");
     private void FormatOL() => PrefixLine("1. ", "Elemento");
     private void FormatCheck() => PrefixLine("- [ ] ", "Task");
@@ -582,7 +590,7 @@ public partial class MainWindow : Window
         try
         {
             await PreviewWebView.EnsureCoreWebView2Async(null);
-            PreviewWebView.CoreWebView2.Settings.IsScriptEnabled = false;
+            PreviewWebView.CoreWebView2.Settings.IsScriptEnabled = true;
             UpdateWebViewContent();
         }
         catch (Exception ex)
@@ -603,6 +611,44 @@ public partial class MainWindow : Window
                 : System.Drawing.Color.White;
             PreviewWebView.CoreWebView2.NavigateToString(_vm.HtmlContent);
         }
+    }
+
+    // ===========================
+    //  SCROLL SYNC
+    // ===========================
+
+    private double _lastScrollFraction = -1;
+
+    private async void OnEditorScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (e.VerticalChange == 0) return;
+        if (PreviewWebView.CoreWebView2 == null) return;
+
+        var sv = sender as ScrollViewer;
+        if (sv == null) return;
+
+        var fraction = sv.VerticalOffset / Math.Max(sv.ScrollableHeight, 1);
+        if (Math.Abs(fraction - _lastScrollFraction) < 0.01) return;
+        _lastScrollFraction = fraction;
+
+        try
+        {
+            var js = $"window.scrollTo(0, document.body.scrollHeight * {fraction.ToString(System.Globalization.CultureInfo.InvariantCulture)});";
+            await PreviewWebView.CoreWebView2.ExecuteScriptAsync(js);
+        }
+        catch { /* ignore script errors */ }
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is T found) return found;
+            var result = FindVisualChild<T>(child);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     private static string Loc(string key) => LocalizationManager.Instance[key];
