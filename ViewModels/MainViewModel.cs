@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
@@ -180,6 +181,8 @@ public partial class MainViewModel : INotifyPropertyChanged
     public ICommand CloseCommand { get; }
     public ICommand ToggleThemeCommand { get; }
     public ICommand SetViewCommand { get; }
+    public ICommand ExportPdfCommand { get; }
+    public ICommand ExportWordCommand { get; }
 
     public MainViewModel()
     {
@@ -196,6 +199,8 @@ public partial class MainViewModel : INotifyPropertyChanged
         CloseCommand = new RelayCommand(_ => CloseActiveDocument());
         ToggleThemeCommand = new RelayCommand(_ => ToggleTheme());
         SetViewCommand = new RelayCommand(p => SetView(p?.ToString() ?? "split"));
+        ExportPdfCommand = new RelayCommand(_ => ExportPdf());
+        ExportWordCommand = new RelayCommand(_ => ExportWord());
 
         // Start with one empty document with welcome text
         var doc = new DocumentModel("", WelcomeText) { IsModified = false };
@@ -207,6 +212,78 @@ public partial class MainViewModel : INotifyPropertyChanged
         {
             OnPropertyChanged(nameof(HasDocuments));
         };
+    }
+
+    /// <summary>
+    /// Ripristina i file dell'ultima sessione salvata.
+    /// Se ci sono file salvati, carica tutti i file e attiva l'ultimo attivo,
+    /// rimuovendo il documento di benvenuto. Altrimenti non fa nulla.
+    /// </summary>
+    /// <returns>Il numero di file ripristinati.</returns>
+    public int RestoreSession()
+    {
+        var settings = App.Settings;
+        if (settings.LastOpenFiles.Count == 0)
+            return 0;
+
+        DocumentModel? activeDoc = null;
+        int loaded = 0;
+
+        foreach (var path in settings.LastOpenFiles)
+        {
+            if (!File.Exists(path))
+                continue;
+
+            try
+            {
+                var content = File.ReadAllText(path);
+                var doc = new DocumentModel(path, content) { IsModified = false };
+                Documents.Add(doc);
+                loaded++;
+
+                if (string.Equals(path, settings.LastActiveFile, StringComparison.OrdinalIgnoreCase))
+                    activeDoc = doc;
+            }
+            catch
+            {
+                // Ignora file che non possono essere letti
+            }
+        }
+
+        if (loaded == 0)
+            return 0;
+
+        // Rimuovi il documento di benvenuto
+        var welcomeDoc = Documents.FirstOrDefault(d => string.IsNullOrEmpty(d.FilePath));
+        if (welcomeDoc != null)
+        {
+            Documents.Remove(welcomeDoc);
+            loaded--;
+        }
+
+        // Attiva l'ultimo documento attivo, o il primo se non trovato
+        ActiveDocument = activeDoc ?? Documents.First();
+        StatusText = string.Format(Loc("Status.SessionRestored"), loaded);
+
+        return loaded;
+    }
+
+    /// <summary>
+    /// Salva lo stato della sessione corrente (file aperti) nelle impostazioni.
+    /// </summary>
+    public void SaveSessionData()
+    {
+        var settings = App.Settings;
+        settings.LastOpenFiles.Clear();
+
+        foreach (var doc in Documents)
+        {
+            if (!string.IsNullOrEmpty(doc.FilePath))
+                settings.LastOpenFiles.Add(doc.FilePath);
+        }
+
+        settings.LastActiveFile = ActiveDocument?.FilePath;
+        settings.Save();
     }
 
     private void NewFile()
@@ -378,6 +455,36 @@ public partial class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Evento sollevato quando l'utente richiede l'esportazione PDF.
+    /// La View gestisce l'effettiva generazione del PDF tramite WebView2.
+    /// </summary>
+    public event EventHandler<string>? ExportPdfRequested;
+
+    /// <summary>
+    /// Evento sollevato quando l'utente richiede l'esportazione Word.
+    /// La View gestisce l'effettiva generazione del DOCX.
+    /// </summary>
+    public event EventHandler<string>? ExportWordRequested;
+
+    private void ExportPdf()
+    {
+        if (ActiveDocument == null) return;
+        var defaultName = Path.GetFileNameWithoutExtension(
+            string.IsNullOrEmpty(ActiveDocument.FilePath) ? "documento" : ActiveDocument.FilePath);
+        var path = $"{defaultName}.pdf";
+        ExportPdfRequested?.Invoke(this, path);
+    }
+
+    private void ExportWord()
+    {
+        if (ActiveDocument == null) return;
+        var defaultName = Path.GetFileNameWithoutExtension(
+            string.IsNullOrEmpty(ActiveDocument.FilePath) ? "documento" : ActiveDocument.FilePath);
+        var path = $"{defaultName}.docx";
+        ExportWordRequested?.Invoke(this, path);
+    }
+
     private void UpdateStatus()
     {
         if (ActiveDocument == null) return;
@@ -429,6 +536,26 @@ public partial class MainViewModel : INotifyPropertyChanged
     }
 
     public event EventHandler<ViewMode>? ViewModeChanged;
+
+    public string GetExportHtml()
+    {
+        try
+        {
+            var text = ActiveDocument?.Content ?? "";
+            var processed = FaRegex().Replace(text, "<i class='fa-solid fa-$1'></i>");
+            var htmlBody = Markdown.ToHtml(processed, _pipeline);
+            var faLink = @"<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>";
+            return $@"<!DOCTYPE html>
+<html><head><meta charset='utf-8'>
+{faLink}
+<style>{PrintCss}</style></head>
+<body>{htmlBody}</body></html>";
+        }
+        catch
+        {
+            return "<html><body><p style='color:red'>Errore nel rendering</p></body></html>";
+        }
+    }
 
     public void UpdatePreview()
     {
@@ -524,6 +651,37 @@ hr { border: none; border-top: 1px solid #e4e4e4; margin: 24px 0; }
 ul, ol { padding-left: 26px; margin: 8px 0 12px 0; }
 li { margin: 3px 0; }
 input[type=checkbox] { margin-right: 6px; transform: scale(1.1); accent-color: #0078D4; }
+";
+
+    /// <summary>CSS per esportazione: sempre nero su bianco, ottimizzato per stampa.</summary>
+    private const string PrintCss = @"
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 14px; line-height: 1.6; color: #000000;
+    background-color: #ffffff; padding: 24px 28px; margin: 0;
+    max-width: 100%; word-wrap: break-word;
+}
+h1 { font-size: 1.8em; font-weight: 700; border-bottom: 2px solid #cccccc; padding-bottom: 8px; margin: 0 0 14px 0; color: #000000; }
+h2 { font-size: 1.4em; font-weight: 700; border-bottom: 1px solid #dddddd; padding-bottom: 6px; margin: 20px 0 10px 0; color: #000000; }
+h3 { font-size: 1.15em; font-weight: 700; margin: 16px 0 8px 0; color: #000000; }
+h4 { font-size: 1.05em; font-weight: 700; margin: 12px 0 6px 0; color: #000000; }
+p { margin: 0 0 10px 0; }
+a { color: #0000EE; text-decoration: underline; }
+code { background-color: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 12px; color: #333333; border: 1px solid #e0e0e0; }
+pre { background-color: #f5f5f5; padding: 14px; border-radius: 6px; overflow-x: auto; border: 1px solid #dddddd; margin: 10px 0; }
+pre code { background: none; padding: 0; color: #000000; font-size: 12px; border: none; }
+blockquote { border-left: 4px solid #666666; margin: 10px 0; padding: 6px 14px; color: #333333; background: #f9f9f9; border-radius: 0 4px 4px 0; }
+blockquote p { margin: 0; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; }
+th, td { border: 1px solid #999999; padding: 8px 12px; text-align: left; }
+th { background-color: #e8e8e8; font-weight: 700; color: #000000; }
+tr:nth-child(even) { background-color: #fafafa; }
+img { max-width: 100%; }
+hr { border: none; border-top: 1px solid #cccccc; margin: 20px 0; }
+ul, ol { padding-left: 24px; margin: 6px 0 10px 0; }
+li { margin: 2px 0; }
+input[type=checkbox] { margin-right: 5px; }
 ";
 
     private const string DarkCss = @"

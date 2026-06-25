@@ -33,6 +33,8 @@ public partial class MainWindow : Window
 
         _vm.ViewModeChanged += OnViewModeChanged;
         _vm.ViewTitleChanged += (_, t) => Title = t;
+        _vm.ExportPdfRequested += OnExportPdfRequested;
+        _vm.ExportWordRequested += OnExportWordRequested;
 
         InitializeWebView();
         InitializeFromSettings();
@@ -44,7 +46,17 @@ public partial class MainWindow : Window
         // If launched via double-click on an .md file, open it
         var fileToOpen = App.FileToOpen;
         if (!string.IsNullOrEmpty(fileToOpen) && File.Exists(fileToOpen))
+        {
             _vm.LoadFile(fileToOpen);
+        }
+        else
+        {
+            // Altrimenti ripristina l'ultima sessione
+            _vm.RestoreSession();
+        }
+
+        // Salva sessione alla chiusura
+        Closing += (_, _) => _vm.SaveSessionData();
 
         // Scroll sync: editor → preview
         EditorTextBox.Loaded += (_, _) =>
@@ -165,6 +177,9 @@ public partial class MainWindow : Window
         MenuOpen.Header = l["Menu.Open"];
         MenuSave.Header = l["Menu.Save"];
         MenuSaveAs.Header = l["Menu.SaveAs"];
+        MenuExport.Header = l["Menu.Export"];
+        MenuExportPdf.Header = l["Menu.ExportPdf"];
+        MenuExportWord.Header = l["Menu.ExportWord"];
         MenuClose.Header = l["Menu.Close"];
         MenuExit.Header = l["Menu.Exit"];
         MenuView.Header = l["Menu.View"];
@@ -180,6 +195,8 @@ public partial class MainWindow : Window
         BtnNew.ToolTip = l["Toolbar.New"];
         BtnOpen.ToolTip = l["Toolbar.Open"];
         BtnSave.ToolTip = l["Toolbar.Save"];
+        BtnExportPdf.ToolTip = l["Toolbar.ExportPdf"];
+        BtnExportWord.ToolTip = l["Toolbar.ExportWord"];
         BtnTheme.ToolTip = l["Toolbar.Theme"];
         BtnSwap.ToolTip = l["Toolbar.Swap"];
         BtnLang.ToolTip = l["Menu.Language"];
@@ -188,6 +205,8 @@ public partial class MainWindow : Window
         LblNew.Text = l["Menu.New"];
         LblOpen.Text = l["Menu.Open"];
         LblSave.Text = l["Menu.Save"];
+        LblExportPdf.Text = "PDF";
+        LblExportWord.Text = "Word";
         LblView.Text = l["Toolbar.View"];
         LblSplit.Text = l["Toolbar.Split"];
         LblEditor.Text = l["Toolbar.Editor"];
@@ -694,6 +713,102 @@ public partial class MainWindow : Window
     }
 
     private static string Loc(string key) => LocalizationManager.Instance[key];
+
+    // ===========================
+    //  EXPORT
+    // ===========================
+
+    private async void OnExportPdfRequested(object? sender, string defaultPath)
+    {
+        try
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "File PDF (*.pdf)|*.pdf",
+                DefaultExt = ".pdf",
+                FileName = defaultPath
+            };
+
+            if (dlg.ShowDialog() != true) return;
+
+            if (PreviewWebView.CoreWebView2 == null)
+            {
+                await PreviewWebView.EnsureCoreWebView2Async(null);
+                UpdateWebViewContent();
+                await Task.Delay(500);
+            }
+
+            var coreWebView = PreviewWebView.CoreWebView2;
+            if (coreWebView == null) return;
+
+            // Salva l'HTML corrente e carica la versione bianco su nero per l'esportazione
+            var originalHtml = _vm.HtmlContent;
+            var exportHtml = _vm.GetExportHtml();
+
+            var tcs = new TaskCompletionSource<bool>();
+            EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs>? handler = null;
+            handler = (_, _) =>
+            {
+                coreWebView.NavigationCompleted -= handler;
+                tcs.TrySetResult(true);
+            };
+            coreWebView.NavigationCompleted += handler;
+
+            coreWebView.NavigateToString(exportHtml);
+            await tcs.Task;
+            // Piccolo ritardo extra per garantire il rendering completo
+            await Task.Delay(300);
+
+            await coreWebView.PrintToPdfAsync(dlg.FileName);
+            _vm.StatusText = string.Format(Loc("Status.ExportPdf"), System.IO.Path.GetFileName(dlg.FileName));
+
+            // Ripristina l'HTML originale
+            coreWebView.NavigateToString(originalHtml);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"{Loc("Dialog.ExportError")}: {ex.Message}", "MDEditor",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void OnExportWordRequested(object? sender, string defaultPath)
+    {
+        try
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Documento Word (*.docx)|*.docx",
+                DefaultExt = ".docx",
+                FileName = defaultPath
+            };
+
+            if (dlg.ShowDialog() != true) return;
+
+            // Usa sempre l'HTML di esportazione (bianco su nero)
+            var exportHtml = _vm.GetExportHtml();
+            var bodyStart = exportHtml.IndexOf("<body>", StringComparison.Ordinal);
+            var bodyEnd = exportHtml.IndexOf("</body>", StringComparison.Ordinal);
+            var styleStart = exportHtml.IndexOf("<style>", StringComparison.Ordinal);
+            var styleEnd = exportHtml.IndexOf("</style>", StringComparison.Ordinal);
+
+            var htmlBody = (bodyStart >= 0 && bodyEnd > bodyStart)
+                ? exportHtml.Substring(bodyStart + 6, bodyEnd - bodyStart - 6)
+                : "";
+
+            var css = (styleStart >= 0 && styleEnd > styleStart)
+                ? exportHtml.Substring(styleStart + 7, styleEnd - styleStart - 7)
+                : null;
+
+            Models.ExportService.ExportToWord(dlg.FileName, htmlBody, css);
+            _vm.StatusText = string.Format(Loc("Status.ExportWord"), System.IO.Path.GetFileName(dlg.FileName));
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"{Loc("Dialog.ExportError")}: {ex.Message}", "MDEditor",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
     // ===========================
     //  VIEW MODE

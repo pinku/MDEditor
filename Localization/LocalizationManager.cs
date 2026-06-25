@@ -92,6 +92,7 @@ public class LocalizationManager : INotifyPropertyChanged
         ["Status.NewFile"] = "Nuovo file",
         ["Status.Opened"] = "Aperto: {0}",
         ["Status.Saved"] = "Salvato: {0}",
+        ["Status.SessionRestored"] = "Sessione ripristinata: {0} file",
 
         ["Dialog.SaveQuestion"] = "Vuoi salvare le modifiche?",
         ["Dialog.ErrorOpen"] = "Errore apertura file",
@@ -106,6 +107,17 @@ public class LocalizationManager : INotifyPropertyChanged
         ["About.Description"] = "Editor e viewer Markdown con preview in tempo reale, temi chiaro/scuro, supporto tabelle, emoji e icone Font Awesome.",
         ["About.Technologies"] = "Tecnologie",
         ["About.Credits"] = "Realizzato da",
+
+        ["Menu.Export"] = "Esporta",
+        ["Menu.ExportPdf"] = "Esporta come PDF...",
+        ["Menu.ExportWord"] = "Esporta come Word...",
+
+        ["Toolbar.ExportPdf"] = "Esporta come PDF",
+        ["Toolbar.ExportWord"] = "Esporta come Word",
+
+        ["Status.ExportPdf"] = "PDF esportato: {0}",
+        ["Status.ExportWord"] = "DOCX esportato: {0}",
+        ["Dialog.ExportError"] = "Errore durante l'esportazione",
 
         ["File.Untitled"] = "senza titolo",
         ["File.Filter"] = "File Markdown (*.md)|*.md|Tutti i file (*.*)|*.*",
@@ -170,6 +182,7 @@ public class LocalizationManager : INotifyPropertyChanged
         ["Status.NewFile"] = "New file",
         ["Status.Opened"] = "Opened: {0}",
         ["Status.Saved"] = "Saved: {0}",
+        ["Status.SessionRestored"] = "Session restored: {0} files",
 
         ["Dialog.SaveQuestion"] = "Do you want to save changes?",
         ["Dialog.ErrorOpen"] = "Error opening file",
@@ -184,6 +197,17 @@ public class LocalizationManager : INotifyPropertyChanged
         ["About.Description"] = "Markdown editor and viewer with live preview, light/dark themes, table support, emoji and Font Awesome icons.",
         ["About.Technologies"] = "Technologies",
         ["About.Credits"] = "Created by",
+
+        ["Menu.Export"] = "Export",
+        ["Menu.ExportPdf"] = "Export as PDF...",
+        ["Menu.ExportWord"] = "Export as Word...",
+
+        ["Toolbar.ExportPdf"] = "Export as PDF",
+        ["Toolbar.ExportWord"] = "Export as Word",
+
+        ["Status.ExportPdf"] = "PDF exported: {0}",
+        ["Status.ExportWord"] = "DOCX exported: {0}",
+        ["Dialog.ExportError"] = "Error during export",
 
         ["File.Untitled"] = "untitled",
         ["File.Filter"] = "Markdown files (*.md)|*.md|All files (*.*)|*.*",

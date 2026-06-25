@@ -42,6 +42,13 @@
                 <MenuItem x:Name="MenuSaveAs" Header="Salva con nome..."
                           Command="{Binding SaveAsCommand}" InputGestureText="Ctrl+Shift+S" />
                 <Separator />
+                <MenuItem x:Name="MenuExport" Header="Esporta">
+                    <MenuItem x:Name="MenuExportPdf" Header="Esporta come PDF..."
+                              Command="{Binding ExportPdfCommand}" />
+                    <MenuItem x:Name="MenuExportWord" Header="Esporta come Word..."
+                              Command="{Binding ExportWordCommand}" />
+                </MenuItem>
+                <Separator />
                 <MenuItem x:Name="MenuClose" Header="Chiudi scheda"
                           Command="{Binding CloseCommand}" InputGestureText="Ctrl+W" />
                 <Separator />
@@ -113,6 +120,21 @@
 
             <Button Click="LangToggle_Click" x:Name="BtnLang" ToolTip="Lingua">
                 <TextBlock x:Name="LangButton" Text="🇮🇹 IT" FontSize="12" />
+            </Button>
+
+            <Separator Style="{StaticResource ToolbarSeparator}" />
+
+            <Button Command="{Binding ExportPdfCommand}" x:Name="BtnExportPdf" ToolTip="Esporta PDF">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📄" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock x:Name="LblExportPdf" Text="PDF" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding ExportWordCommand}" x:Name="BtnExportWord" ToolTip="Esporta Word">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="📝" FontSize="14" Margin="0,0,4,0" />
+                    <TextBlock x:Name="LblExportWord" Text="Word" />
+                </StackPanel>
             </Button>
 
             <Separator Style="{StaticResource ToolbarSeparator}" />
